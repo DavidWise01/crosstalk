@@ -205,7 +205,7 @@ footer{padding:26px 0 60px;text-align:center;font-family:var(--mono);font-size:1
   <h2 class="sec">The control arm, live</h2>
   <p class="sub">This is the harness's own logic — <code>sighting.py</code> + <code>score.py</code> — ported faithfully: the same freshness gate, the same held-out arm, the same recipient and impossible gates. Fresh 128-bit markers via WebCrypto; flip the failure modes and watch a lead gate out. Nothing leaves this page.</p>
   <div class="op">
-    <div class="otop">◎ HARNESS · <b>run_panel + score</b>, ported verbatim — the real controls, client-side (no network)</div>
+    <div class="otop">◎ HARNESS · <b>run_panel + score</b>, ported faithfully — the real controls, client-side (no network)</div>
     <div class="opgrid">
       <div class="opcell">
         <h4>the registry &amp; the sightings</h4>
@@ -227,7 +227,7 @@ footer{padding:26px 0 60px;text-align:center;font-family:var(--mono);font-size:1
         <div class="stat" id="stat"></div>
       </div>
     </div>
-    <div class="opnote">Verbatim from <span class="mono">score.py</span>: a HARD lead needs the canary seeded AFTER <span class="mono">model_cutoff</span>, <span class="mono">recipient=="third_party"</span>, and observed ≥ seeded; a pre-cutoff canary gates to WEIGHTS (surfacing's membrane); a held-out canary in any sighting spikes FPR and the run is <span class="mono">INVALID</span>. Corroboration = distinct third-party sightings. Base-rate = checks × 2<sup>−128</sup>.</div>
+    <div class="opnote">Faithful to <span class="mono">score.py</span>: a HARD lead needs the canary seeded AFTER <span class="mono">model_cutoff</span>, <span class="mono">recipient=="third_party"</span>, and observed ≥ seeded; a pre-cutoff canary gates to WEIGHTS (surfacing's membrane); a held-out canary in any sighting spikes FPR and the run is <span class="mono">INVALID</span>. Corroboration = distinct third-party sightings. Base-rate = checks × 2<sup>−128</sup>.</div>
   </div>
 </section>
 
@@ -299,7 +299,7 @@ function newValue(){
 }
 function standsAlone(text, v){
   try{ return new RegExp("(?<![A-Za-z0-9_-])"+v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![A-Za-z0-9_-])").test(text); }
-  catch(e){ return new RegExp("(^|[^A-Za-z0-9_-])"+v+"([^A-Za-z0-9_-]|$)").test(text); }
+  catch(e){ var ev=v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); return new RegExp("(^|[^A-Za-z0-9_-])"+ev+"([^A-Za-z0-9_-]|$)").test(text); }
 }
 function before(a,b){ if(!a||!b) return false; return a.slice(0,19) < b.slice(0,19); }
 function fresh(seeded,cutoff){ if(!seeded||!cutoff) return false; return seeded.slice(0,10) > cutoff.slice(0,10); }
