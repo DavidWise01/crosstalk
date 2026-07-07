@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CROSSTALK · did your marker leak through live inference · ROOT0</title>
+<meta name="description" content="crosstalk by David Lee Wise / ROOT0: a membership-detection harness for the inference/API membrane. Its siblings catch your canary published on a page, baked into the weights, or relayed by a human; crosstalk catches the live one — your marker emitted by a hosted model's inference to someone who is not you, via cache, retrieval, or cross-session bleed. The FRESHNESS GATE separates live leakage from training membership: only a canary seeded AFTER the model's cutoff counts. Self-testable live in your browser.">
+<meta name="theme-color" content="#a85d3c">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CROSSTALK · did your marker leak through live inference">
+<meta property="og:description" content="Your marker emitted by a hosted model's inference to a third party — cache, retrieval, cross-session bleed. The freshness gate (seeded after the model's cutoff) separates live leakage from training membership. A corroborated lead, never proof. Verify the controls live.">
+<meta property="og:url" content="https://davidwise01.github.io/crosstalk/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CROSSTALK · did your marker leak through live inference">
+<meta name="twitter:description" content="The inference/API membrane detector. Fresh-in, third-party-out = live leakage, not training. A corroborated lead, never proof. Verify live.">
+<link rel="canonical" href="https://davidwise01.github.io/crosstalk/">
+<style>
+:root{
+  --paper:#efe8e1; --pan:#f7f1ea; --pan2:#efe6db;
+  --ink:#2a231d; --ink2:#544738; --dim:#8a7c6b;
+  --copper:#a85d3c; --copper2:#7c4327;
+  --canary:#c99128; --canary2:#9a6d18;
+  --signal:#bf4638; --signal2:#8f3025;
+  --line:#ddccbb; --line2:#e8ddce;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:ui-monospace,"SFMono-Regular","Cascadia Code","Consolas",monospace;
+  --shadow:0 1px 0 #fffc, 0 16px 34px -24px #2a1f1044;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;
+  background-image:repeating-linear-gradient(0deg,#0000 0 33px,#a85d3c0d 33px 34px)}
+.wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+a{color:var(--copper2);text-underline-offset:2px}
+h1,h2,h3{line-height:1.13;font-weight:600;letter-spacing:.2px}
+.mono{font-family:var(--mono)}
+
+header.top{padding:38px 0 12px}
+.sealrow{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.seal{width:112px;height:112px;flex:none;filter:drop-shadow(0 8px 18px -10px #2a1f1055)}
+.kick{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--copper2)}
+h1.mh{font-size:clamp(31px,6.2vw,54px);margin:.08em 0 .12em;letter-spacing:.6px}
+.lede{font-size:18px;color:var(--ink2);max-width:64ch;margin:.35em 0 0}
+.lede b{color:var(--ink);font-weight:600}
+
+.asym{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 2px}
+.asym .a{flex:1 1 260px;border:1px solid var(--line);border-radius:12px;background:var(--pan);box-shadow:var(--shadow);padding:13px 16px}
+.asym .a .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.asym .a.pos .t{color:var(--copper)} .asym .a.neg .t{color:var(--signal2)}
+.asym .a p{margin:.35em 0 0;font-size:14px;color:var(--ink2)}
+.asym .a p b{color:var(--ink)}
+
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:22px 0 4px;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);background:var(--pan)}
+.fstep{flex:1 1 150px;padding:14px 15px;border-right:1px solid var(--line2);position:relative;min-width:150px}
+.fstep:last-child{border-right:0}
+.fstep .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper)}
+.fstep .n{font-size:15.5px;font-weight:600;margin:3px 0 3px}
+.fstep .d{font-size:12.5px;color:var(--ink2)}
+.fstep .ar{position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--canary);font-size:16px;z-index:2;background:var(--pan);padding:2px 0}
+@media(max-width:720px){.fstep .ar{display:none}}
+
+section{padding:34px 0 4px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--canary2)}
+h2.sec{font-size:clamp(23px,4vw,31px);margin:.14em 0 .18em}
+.sub{color:var(--ink2);max-width:70ch;margin:0 0 18px}
+
+.ctrls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ctrl{border:1px solid var(--line);border-radius:12px;background:var(--pan);box-shadow:var(--shadow);padding:14px 15px;position:relative;overflow:hidden}
+.ctrl:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc)}
+.ctrl .cn{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--cc);line-height:1}
+.ctrl h3{font-size:14.5px;margin:8px 0 4px}
+.ctrl p{font-size:12.7px;color:var(--ink2);margin:0}
+@media(max-width:760px){.ctrls{grid-template-columns:1fr}}
+
+.op{border:1px solid var(--line);border-radius:15px;background:var(--pan);box-shadow:var(--shadow);overflow:hidden}
+.op .otop{display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(180deg,#fff8,#fff0);border-bottom:1px solid var(--line2);font-family:var(--mono);font-size:12px;color:var(--ink2);flex-wrap:wrap}
+.op .otop b{color:var(--copper2)}
+.opgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:0}
+.opcell{padding:16px 17px;border-right:1px solid var(--line2)}
+.opcell:last-child{border-right:0}
+.opcell h4{margin:0 0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.reg{font-family:var(--mono);font-size:12px;background:#fdfbf8;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.reg .rh{display:grid;grid-template-columns:1fr auto;gap:8px;padding:6px 10px;background:var(--pan2);border-bottom:1px solid var(--line2);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.reg .row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px 10px;border-bottom:1px dashed var(--line);align-items:center}
+.reg .row:last-child{border-bottom:0}
+.reg .v{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .v .mk{color:var(--ink)}
+.tag{display:inline-block;border-radius:20px;padding:1px 8px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.tag.fresh{background:color-mix(in srgb,var(--copper) 15%,#fff);color:var(--copper2)}
+.tag.stale{background:color-mix(in srgb,var(--canary) 22%,#fff);color:var(--canary2)}
+.tag.held{background:color-mix(in srgb,var(--signal) 14%,#fff);color:var(--signal2)}
+.tier{display:inline-block;border-radius:20px;padding:1px 8px;font-size:10.5px;font-weight:700}
+.tier.hard{background:var(--copper);color:#fff}
+.tier.weights{background:#e7dfc7;color:var(--canary2)}
+.tier.impossible{background:#e7dfc7;color:var(--dim)}
+.tier.self{background:#e7dfc7;color:var(--dim)}
+.tier.control{background:var(--signal);color:#fff}
+.tier.none{background:#efe7dd;color:var(--dim)}
+.corr{font-family:var(--mono);font-size:10.5px;color:var(--copper2)}
+
+.relays{font-family:var(--mono);font-size:11.5px;background:#fdfbf8;border:1px solid var(--line);border-radius:9px;padding:8px;margin-top:10px;max-height:120px;overflow:auto}
+.relays .le{padding:4px 6px;border-bottom:1px dashed var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.relays .le:last-child{border-bottom:0}
+.relays .le b{color:var(--copper2)} .relays .le .pt{color:var(--dim)}
+
+.panelctl{margin:2px 0 10px}
+.togg{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;cursor:pointer}
+.togg input{margin-top:3px;flex:none;accent-color:var(--copper)}
+.togg .lab{color:var(--ink)} .togg .lab b{font-family:var(--mono);font-size:12px}
+.togg .lab .why{color:var(--ink2);font-size:12.3px}
+.runrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 4px}
+.btn{font-family:var(--mono);font-size:12.5px;border:1px solid var(--copper);background:color-mix(in srgb,var(--copper) 12%,#fff);color:var(--copper2);border-radius:8px;padding:9px 15px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{background:color-mix(in srgb,var(--copper) 22%,#fff)}
+.verdict{font-family:var(--mono);font-size:13px;line-height:1.5;border-radius:9px;padding:11px 13px;margin-top:10px;border:1px solid var(--line)}
+.verdict.clean{background:color-mix(in srgb,var(--copper) 9%,#fff);border-color:color-mix(in srgb,var(--copper) 35%,#fff);color:var(--copper2)}
+.verdict.invalid{background:color-mix(in srgb,var(--signal) 8%,#fff);border-color:color-mix(in srgb,var(--signal) 32%,#fff);color:var(--signal2)}
+.verdict .vh{font-weight:700;letter-spacing:.05em}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:11px;font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.stat b{color:var(--ink);font-weight:600}
+.opnote{padding:11px 17px;font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--pan2);line-height:1.6;border-top:1px solid var(--line2)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.card{border:1px solid var(--line);border-radius:12px;background:var(--pan);padding:16px 18px;box-shadow:var(--shadow)}
+.card h3{font-size:14px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--copper2);margin:0 0 8px}
+.card.sig h3{color:var(--signal2)}
+.card p{margin:.35em 0;font-size:14.5px;color:var(--ink2)}
+.card ul{margin:.3em 0;padding-left:1.1em;font-size:13.8px;color:var(--ink2)}
+.card code{font-family:var(--mono);font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.75}
+.backbar{margin:30px 0 0;padding:15px 0;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px}
+.backbar a{text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;background:var(--pan)}
+.backbar a:hover{border-color:var(--copper)}
+footer{padding:26px 0 60px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+@media(max-width:760px){.opgrid,.two{grid-template-columns:1fr}.opcell{border-right:0;border-bottom:1px solid var(--line2)}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="sealrow">
+    <svg class="seal" viewBox="0 0 120 120" role="img" aria-label="Crosstalk insignia">
+      <circle cx="60" cy="60" r="56" fill="none" stroke="#a85d3c" stroke-width="2.4"/>
+      <!-- two channels, a signal bleeding from one into the other -->
+      <line x1="20" y1="44" x2="100" y2="44" stroke="#a85d3c" stroke-width="1.8"/>
+      <line x1="20" y1="78" x2="100" y2="78" stroke="#a85d3c" stroke-width="1.8"/>
+      <!-- the marker leaking across (canary gold) -->
+      <path d="M60 44 C 50 56, 70 66, 60 78" fill="none" stroke="#9a6d18" stroke-width="1.5" stroke-dasharray="2 3"/>
+      <circle cx="60" cy="61" r="5.5" fill="#c99128"/>
+      <circle cx="60" cy="61" r="5.5" fill="none" stroke="#8f3025" stroke-width="1.2"/>
+      <circle cx="60" cy="61" r="1.6" fill="#2a2412"/>
+      <text x="26" y="40" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" fill="#7c4327">your channel</text>
+      <text x="30" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" fill="#7c4327">their channel</text>
+      <text x="60" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" fill="#544738" letter-spacing="1.5">LIVE INFERENCE</text>
+    </svg>
+    <div>
+      <div class="kick">the inference / API membrane</div>
+      <h1 class="mh">CROSSTALK</h1>
+      <p class="lede">Did your marker leak through <b>live inference</b>. Its siblings catch your canary published on a page, baked into the weights, or relayed by a human. Crosstalk catches the live one: your marker emitted by a hosted model's inference <b>to someone who is not you</b> — through a shared cache, a retrieval index, or cross-session bleed.</p>
+    </div>
+  </div>
+
+  <div class="asym">
+    <div class="a pos">
+      <div class="t">▲ fresh-in, third-party-out</div>
+      <p>A marker only <b>you</b> seeded, and only <b>after the model's cutoff</b>, coming out of its inference to <b>someone else</b> — too new to be in the weights, with a held-out arm proving the harness isn't fabricating. Hard to explain away.</p>
+    </div>
+    <div class="a neg">
+      <div class="t">▽ a negative is quiet</div>
+      <p>You see almost none of a model's completions to other people. Silence here means <b>almost nothing</b> — and a hit is a <b>lead</b> about live leakage, never proof of the mechanism or of a vendor's fault.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="fstep"><div class="t">detection</div><div class="n">the marker</div><div class="d">128-bit token, ~zero prior probability</div><span class="ar">→</span></div>
+    <div class="fstep"><div class="t">anchoring</div><div class="n">freshness</div><div class="d">seeded when — before or after the cutoff</div><span class="ar">→</span></div>
+    <div class="fstep"><div class="t">comparison</div><div class="n">the sighting</div><div class="d">a completion, to a third party</div><span class="ar">→</span></div>
+    <div class="fstep"><div class="t">witness</div><div class="n">the controls</div><div class="d">held-out · freshness gate · corroboration</div></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+
+<section id="controls">
+  <div class="eyebrow">The instrument</div>
+  <h2 class="sec">The freshness gate is the whole trick</h2>
+  <p class="sub">Live inference leakage looks like training membership — both re-emit your marker. Time tells them apart: a marker seeded <b>after</b> the model's cutoff cannot be in the weights, so if it comes out of that model to a third party, it leaked live. Everything else is a control against reading a hit that isn't there.</p>
+  <div class="ctrls">
+    <div class="ctrl" style="--cc:var(--copper)">
+      <div class="cn">1</div><h3>The freshness gate</h3>
+      <p>Only a canary seeded <b>after</b> the model's cutoff counts. A pre-cutoff one could be in the weights — that's <a href="https://davidwise01.github.io/surfacing/">surfacing</a>'s membrane, gated out here.</p>
+    </div>
+    <div class="ctrl" style="--cc:var(--signal)">
+      <div class="cn">2</div><h3>Held-out + recipient</h3>
+      <p>A marker seeded <b>nowhere</b> that appears = fabrication = INVALID. And the completion must go to a <b>third party</b> — a self-addressed one isn't cross-session.</p>
+    </div>
+    <div class="ctrl" style="--cc:var(--canary)">
+      <div class="cn">3</div><h3>Corroboration ≠ proof</h3>
+      <p>A lead's strength is how many <b>independent</b> third-party sightings carry it. It never names the mechanism (cache / retrieval / bleed) or blames a vendor.</p>
+    </div>
+  </div>
+</section>
+
+<section id="selftest">
+  <div class="eyebrow">Verify first</div>
+  <h2 class="sec">The control arm, live</h2>
+  <p class="sub">This is the harness's own logic — <code>sighting.py</code> + <code>score.py</code> — ported faithfully: the same freshness gate, the same held-out arm, the same recipient and impossible gates. Fresh 128-bit markers via WebCrypto; flip the failure modes and watch a lead gate out. Nothing leaves this page.</p>
+  <div class="op">
+    <div class="otop">◎ HARNESS · <b>run_panel + score</b>, ported verbatim — the real controls, client-side (no network)</div>
+    <div class="opgrid">
+      <div class="opcell">
+        <h4>the registry &amp; the sightings</h4>
+        <div class="reg" id="reg"></div>
+        <div class="relays" id="relays"></div>
+      </div>
+      <div class="opcell">
+        <h4>the panel · run &amp; score</h4>
+        <div class="panelctl" id="toggles">
+          <label class="togg"><input type="checkbox" id="tStale"><span class="lab"><b>seed marker #1 BEFORE the model's cutoff</b><br><span class="why">now it could be in the weights — the freshness gate sends it to surfacing's membrane</span></span></label>
+          <label class="togg"><input type="checkbox" id="tSelf"><span class="lab"><b>marker #1's completions come back to you</b><br><span class="why">a self-addressed completion isn't cross-session leakage</span></span></label>
+          <label class="togg"><input type="checkbox" id="tFab"><span class="lab"><b>inject a fabricated held-out sighting</b><br><span class="why">a marker seeded nowhere turns up — the control arm must void the run</span></span></label>
+        </div>
+        <div class="runrow">
+          <button class="btn" id="run">▸ run panel</button>
+          <button class="btn" id="regen" style="border-color:var(--line);background:var(--pan);color:var(--ink2)">↻ new markers</button>
+        </div>
+        <div class="verdict" id="verdict"></div>
+        <div class="stat" id="stat"></div>
+      </div>
+    </div>
+    <div class="opnote">Verbatim from <span class="mono">score.py</span>: a HARD lead needs the canary seeded AFTER <span class="mono">model_cutoff</span>, <span class="mono">recipient=="third_party"</span>, and observed ≥ seeded; a pre-cutoff canary gates to WEIGHTS (surfacing's membrane); a held-out canary in any sighting spikes FPR and the run is <span class="mono">INVALID</span>. Corroboration = distinct third-party sightings. Base-rate = checks × 2<sup>−128</sup>.</div>
+  </div>
+</section>
+
+<section id="scope">
+  <div class="eyebrow">The honest scope</div>
+  <h2 class="sec">What a certified lead does — and does not — mean</h2>
+  <div class="two">
+    <div class="card">
+      <h3>What it does mean</h3>
+      <p>A marker only you seeded, and only <b>after this model's cutoff</b>, appearing in a completion to <b>someone else</b>, with a held-out arm proving the harness isn't fabricating.</p>
+      <p>That is real evidence it <b>leaked through live inference</b> — not training, not a page, not a human relay.</p>
+    </div>
+    <div class="card sig">
+      <h3>What it does not mean</h3>
+      <p>It does <b>not</b> prove which mechanism (cache / retrieval / cross-session), blame a vendor, or prove theft. It is a corroborated <b>lead</b>, temporal/structural.</p>
+      <p>And a <b>negative</b> means little: you see almost none of a model's completions to other people.</p>
+    </div>
+  </div>
+</section>
+
+<section id="honesty">
+  <div class="eyebrow">The colophon</div>
+  <h2 class="sec">Sound — and the limits it names out loud</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Sound</h3>
+      <ul>
+        <li>The <b>controls are real and verifiable</b>: <code>python selftest.py</code> proves — no network — that a fresh marker in third-party completions is certified and corroborated, a held-out marker spikes FPR and the run is <b>refused</b>, a <b>pre-cutoff</b> marker is WEIGHTS-gated (it belongs to surfacing), a self-addressed completion isn't certified, and a pre-seed sighting is IMPOSSIBLE.</li>
+        <li>The <b>freshness gate</b> is the honest move: it refuses to claim inference leakage for anything training could explain.</li>
+        <li>The self-test above is that exact logic — <code>run_panel</code> + <code>score</code> — client-side.</li>
+      </ul>
+    </div>
+    <div class="card sig">
+      <h3>Limits (and it says so)</h3>
+      <ul>
+        <li><b>Cutoffs are vendor self-reported.</b> The freshness gate is only as honest as the cutoff you feed it.</li>
+        <li><b>Seeding ≠ reach.</b> You control where you put a marker, not whether inference actually read it.</li>
+        <li><b>One membrane only.</b> Published → forward-observers; weights → surfacing; a human relay → hearsay.</li>
+        <li><b>A lead, not a finding.</b> It never names the mechanism or blames a vendor.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    SOURCE · the runnable kit — <a href="https://github.com/DavidWise01/crosstalk">github.com/DavidWise01/crosstalk</a> · <code>canary.py</code> (128-bit markers + seeded_utc) · <code>registry.py</code> · <code>sighting.py</code> (completion + cutoff + recipient) · <code>score.py</code> (held-out + freshness gate + recipient + impossible + corroboration) · <code>harness.py</code> · <code>selftest.py</code> (no network). Closure-Loop layered: Detection → Anchoring → Comparison → Witness → Lineage.
+  </div>
+  <div class="backbar">
+    <a href="https://github.com/DavidWise01/crosstalk">⧉ the code (GitHub)</a>
+    <a href="https://davidwise01.github.io/membrane-map/">⊞ the membrane map</a>
+    <a href="https://davidwise01.github.io/surfacing/">▽ surfacing · weights membrane</a>
+    <a href="https://davidwise01.github.io/hearsay/">&#8220;&#8221; hearsay · context membrane</a>
+    <a href="https://davidwise01.github.io/ud0/">⌂ ud0 · the atlas</a>
+  </div>
+</section>
+
+<footer>
+  CROSSTALK · the inference / API membrane detector · David Lee Wise / ROOT0 / TriPod LLC · CC-BY-ND-4.0<br>
+  fresh-in, third-party-out is the signal · a corroborated lead, never proof · a negative means almost nothing
+</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+// ---- faithful client-side port of sighting.py / score.py ----------------------
+var HEX_LEN=32;
+function newValue(){
+  var a=new Uint8Array(16); crypto.getRandomValues(a);
+  return Array.from(a).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+}
+function standsAlone(text, v){
+  try{ return new RegExp("(?<![A-Za-z0-9_-])"+v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![A-Za-z0-9_-])").test(text); }
+  catch(e){ return new RegExp("(^|[^A-Za-z0-9_-])"+v+"([^A-Za-z0-9_-]|$)").test(text); }
+}
+function before(a,b){ if(!a||!b) return false; return a.slice(0,19) < b.slice(0,19); }
+function fresh(seeded,cutoff){ if(!seeded||!cutoff) return false; return seeded.slice(0,10) > cutoff.slice(0,10); }
+function tier(d){
+  if(d.held_out) return "control";
+  if(d.recipient==="self") return "self";
+  if(before(d.observed_utc,d.seeded_utc)) return "impossible";
+  if(!fresh(d.seeded_utc,d.model_cutoff)) return "weights";
+  return "hard";
+}
+function score(detections, registry){
+  var held=registry.filter(function(e){return e.held_out;});
+  detections.forEach(function(d){ d.tier=tier(d); });
+  var controlHits={}; detections.forEach(function(d){ if(d.tier==="control") controlHits[d.value]=1; });
+  var fpr = held.length ? Object.keys(controlHits).length/held.length : null;
+  var hard={}; detections.forEach(function(d){ if(d.tier==="hard"){ (hard[d.value]=hard[d.value]||{})[d.sighting_id]=1; } });
+  var weights={}, impossible={};
+  detections.forEach(function(d){ if(d.tier==="weights") weights[d.value]=1; if(d.tier==="impossible") impossible[d.value]=1; });
+  var checks=Math.max(1,detections.length);
+  var baseRate=checks*Math.pow(2,-(HEX_LEN*4));
+  var verdict, certified;
+  if(!held.length){ verdict={k:"invalid",h:"INVALID",t:"no held-out control arm was run (performative)"}; certified={}; }
+  else if(fpr && fpr>0){ verdict={k:"invalid",h:"INVALID",t:"control FPR="+fpr.toFixed(2)+" — the harness is manufacturing sightings; no lead is trustworthy"}; certified={}; }
+  else { certified=hard; var n=Object.keys(certified).length;
+    verdict={k:"clean",h:"CLEAN",t:"control FPR=0 over "+held.length+" held-out; "+n+" inference-leak lead(s) — corroboration, not proof"}; }
+  var cc={}; Object.keys(certified).forEach(function(v){ cc[v]=Object.keys(certified[v]).length; });
+  return {verdict:verdict, certified:cc, weights:Object.keys(weights), impossible:Object.keys(impossible),
+          controlFpr:fpr, heldN:held.length, baseRate:baseRate, detections:detections};
+}
+// ---- demo registry & sightings ------------------------------------------------
+var CUTOFF="2026-01-01", FRESH="2026-03-01T00:00:00Z", STALE="2025-06-01T00:00:00Z";
+var REG=[], SIGHT=[], lastScore=null;
+function build(){
+  REG=[
+    {value:newValue(), exposure:"seeded", seeded_utc:FRESH, label:"marker #1"},
+    {value:newValue(), exposure:"seeded", seeded_utc:FRESH, label:"marker #2"},
+    {value:newValue(), exposure:"seeded", seeded_utc:FRESH, label:"marker #3"},
+    {value:newValue(), exposure:"held_out", seeded_utc:null, label:"control A"},
+    {value:newValue(), exposure:"held_out", seeded_utc:null, label:"control B"}
+  ];
+  REG.forEach(function(e){ e.held_out = e.exposure==="held_out"; });
+}
+function ctext(v){ return "user B's answer contained: "+v+" (verbatim)."; }
+function buildSightings(){
+  var stale=document.getElementById("tStale").checked;
+  var self=document.getElementById("tSelf").checked;
+  var fab=document.getElementById("tFab").checked;
+  REG[0].seeded_utc = stale ? STALE : FRESH;
+  var rcp = self ? "self" : "third_party";
+  SIGHT=[
+    {text:ctext(REG[0].value), recipient:rcp, model_cutoff:CUTOFF, observed_utc:"2026-04-01T00:00:00Z", source:"user B"},
+    {text:ctext(REG[0].value), recipient:rcp, model_cutoff:CUTOFF, observed_utc:"2026-04-02T00:00:00Z", source:"user C"},
+    {text:ctext(REG[1].value), recipient:"third_party", model_cutoff:CUTOFF, observed_utc:"2026-04-01T00:00:00Z", source:"user D"},
+    {text:ctext(REG[2].value), recipient:"third_party", model_cutoff:CUTOFF, observed_utc:"2026-04-05T00:00:00Z", source:"user E"}
+  ];
+  if(fab) SIGHT.push({text:ctext(REG[3].value), recipient:"third_party", model_cutoff:CUTOFF, observed_utc:"2026-04-01T00:00:00Z", source:"fabricated"});
+}
+function collect(){
+  var det=[];
+  SIGHT.forEach(function(s,si){
+    REG.forEach(function(e){
+      if(standsAlone(s.text,e.value))
+        det.push({value:e.value, held_out:e.held_out, seeded_utc:e.seeded_utc,
+                  recipient:s.recipient, model_cutoff:s.model_cutoff, observed_utc:s.observed_utc, sighting_id:si});
+    });
+  });
+  return det;
+}
+function tierForCanary(e){
+  if(!lastScore) return null;
+  if(e.held_out) return lastScore.detections.some(function(d){return d.value===e.value && d.tier==="control";}) ? "control" : "none";
+  if(lastScore.certified[e.value]) return "hard";
+  if(lastScore.weights.indexOf(e.value)!==-1) return "weights";
+  if(lastScore.impossible.indexOf(e.value)!==-1) return "impossible";
+  var det=lastScore.detections.filter(function(d){return d.value===e.value;});
+  if(det.length && det.every(function(d){return d.tier==="self";})) return "self";
+  return "none";
+}
+function renderReg(){
+  var rows=REG.map(function(e){
+    var frz = e.held_out ? "held" : (fresh(e.seeded_utc,CUTOFF) ? "fresh" : "stale");
+    var tg='<span class="tag '+frz+'">'+(e.held_out?"held-out":(frz==="fresh"?"fresh · post-cutoff":"stale · pre-cutoff"))+'</span>';
+    var t=tierForCanary(e), badge="", corr="";
+    if(t && t!=="none"){ badge=' <span class="tier '+t+'">'+t.toUpperCase()+'</span>';
+      if(t==="hard" && lastScore.certified[e.value]) corr=' <span class="corr">×'+lastScore.certified[e.value]+'</span>'; }
+    return '<div class="row"><span class="v"><span class="mk">'+e.value.slice(0,18)+'…</span></span>'+
+           '<span style="text-align:right">'+tg+badge+corr+'</span></div>';
+  }).join('');
+  document.getElementById("reg").innerHTML='<div class="rh"><span>marker</span><span>freshness · tier</span></div>'+rows;
+}
+function renderSightings(){
+  document.getElementById("relays").innerHTML=SIGHT.map(function(s){
+    var which="?"; REG.forEach(function(e){ if(standsAlone(s.text,e.value)) which=e.label; });
+    return '<div class="le"><b>'+which+'</b> → '+s.source+' <span class="pt">· '+s.recipient+' · seen '+(s.observed_utc||"").slice(0,10)+'</span></div>';
+  }).join('');
+}
+function run(){
+  buildSightings();
+  lastScore=score(collect(), REG);
+  var vd=document.getElementById("verdict");
+  vd.className="verdict "+lastScore.verdict.k;
+  vd.innerHTML='<span class="vh">'+lastScore.verdict.h+'</span> · '+lastScore.verdict.t;
+  document.getElementById("stat").innerHTML=
+    '<div>held-out controls: <b>'+lastScore.heldN+'</b></div>'+
+    '<div>control FPR: <b>'+(lastScore.controlFpr===null?"—":lastScore.controlFpr.toFixed(2))+'</b></div>'+
+    '<div>weights-gated: <b>'+lastScore.weights.length+'</b></div>'+
+    '<div>impossible: <b>'+lastScore.impossible.length+'</b></div>'+
+    '<div>certified leads: <b>'+Object.keys(lastScore.certified).length+'</b></div>'+
+    '<div>base-rate: <b>'+lastScore.baseRate.toExponential(1)+'</b></div>';
+  renderReg(); renderSightings();
+}
+function regen(){ build(); lastScore=null; buildSightings(); renderReg(); renderSightings();
+  document.getElementById("verdict").className="verdict";
+  document.getElementById("verdict").innerHTML='<span style="color:var(--dim)">fresh markers seeded — press <b>run panel</b> to scan the sightings</span>';
+  document.getElementById("stat").innerHTML='';
+}
+["tStale","tSelf","tFab"].forEach(function(id){ document.getElementById(id).addEventListener("change", function(){ buildSightings(); renderSightings(); }); });
+document.getElementById("run").addEventListener("click", run);
+document.getElementById("regen").addEventListener("click", regen);
+build(); regen();
+})();
+</script>
+</body>
+</html>
