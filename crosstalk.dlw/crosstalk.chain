@@ -2,8 +2,8 @@ ROOT0-DLW-CHAIN-v1
 index : 318
 slug  : crosstalk
 seal  : 510189054a49a1bc0cb265a46089a0156e0b593f8dc767742de628790e315884
-prev  : 79f6eb5f0d6a1d035f072ae1994d831d359c2b2aa3b43e4cf60df76d8b562f13
-link  : 46c29834a6bbc31e989c83cfe1bc0a1f44018f906395bf02fa6b74a65de75430
-head  : 13f9ace173ef2e60af38912ba329b4afcb5a38b84a0e4495e8d30327f8c99cc2
+prev  : 837d58670b2d5bb1ab6f59dfa32443ee0af15259063b09303cb31e72424af159
+link  : 69e9a9dc7b6df9ab9d6352c592e37e7dd5a1d27e788cf6b44dc5938b3a8b3da1
+head  : c4d41afeaef76470528856d54d86cf480a0e1c2fc8ebc60fbb9eb8e442585f2b
 
 — the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
